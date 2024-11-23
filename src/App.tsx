@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { PasswordTable } from "./components/PasswordTable";
-import { PasswordForm } from "./components/PasswordForm";
 import { PasswordEntry } from "./types/password";
 import { Button } from "@/components/ui/button";
+import { PasswordForm } from "./components/PasswordForm";
 
 export default function App() {
   const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
