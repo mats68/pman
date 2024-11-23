@@ -1,0 +1,44 @@
+# Ignore node_modules
+node_modules/
+
+# Ignore Vite build output
+dist/
+
+# Ignore environment files
+.env
+.env.* 
+
+# Ignore Vite cache folder
+.vite/
+
+# Ignore specific IDE configuration files (optional)
+.vscode/
+.idea/
+.aidigestignore
+.gitignore
+
+# Ignore lock files (optional)
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+
+# Ignore typescript build cache (if applicable)
+tsconfig.tsbuildinfo
+
+# Ignore other common config files that don’t need analysis
+.DS_Store
+Thumbs.db
+
+# Anderes
+components.json
+todo.md
+eslint.config.js
+postcss.config.js
+README.md
+Annotations.png
+temp.tsx
+
+public/
+stockfish/
+src-tauri/
+
