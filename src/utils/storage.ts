@@ -8,6 +8,7 @@ export const saveToStorage = (key: string, data: any) => {
   // Lädt Daten aus localStorage
   export const loadFromStorage = (key: string): any => {
     const storedData = localStorage.getItem(key);
+    console.log("storedData", storedData);
     return storedData ? JSON.parse(storedData) : null;
   };
   

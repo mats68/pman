@@ -9,8 +9,10 @@ import { PasswordTable } from "./components/PasswordTable";
 import { PasswordForm } from "./components/PasswordForm";
 import { Button } from "@/components/ui/button";
 
+const STORAGE_KEY = "passwords";
+
 export default function App() {
-  const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
+  const [passwords, setPasswords] = useState<PasswordEntry[] | null>(null); // Initial NULL, um Überschreiben zu vermeiden
   const [selectedPassword, setSelectedPassword] = useState<PasswordEntry | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
@@ -18,11 +20,20 @@ export default function App() {
   // Daten laden (Tauri oder Browser)
   useEffect(() => {
     const loadData = async () => {
-      const data = isTauri()
-        ? await loadFromFile("passwords.json") // Tauri
-        : loadFromStorage("passwords"); // Browser
-      if (data) {
-        setPasswords(data);
+      if (isTauri()) {
+        const fileData = await loadFromFile("passwords.json");
+        if (fileData) {
+          setPasswords(fileData); // Daten aus Datei setzen
+        } else {
+          setPasswords([]); // Keine Daten gefunden, leeres Array setzen
+        }
+      } else {
+        const savedPasswords = localStorage.getItem(STORAGE_KEY);
+        if (savedPasswords) {
+          setPasswords(JSON.parse(savedPasswords)); // Daten aus localStorage setzen
+        } else {
+          setPasswords([]); // Keine Daten gefunden, leeres Array setzen
+        }
       }
     };
     loadData();
@@ -30,19 +41,25 @@ export default function App() {
 
   // Daten speichern (Tauri oder Browser)
   useEffect(() => {
-    const saveData = async () => {
-      if (isTauri()) {
-        await saveToFile("passwords.json", passwords); // Tauri
-      } else {
-        saveToStorage("passwords", passwords); // Browser
-      }
-    };
-    saveData();
+    // Speichern nur ausführen, wenn passwords bereits geladen wurden (nicht NULL)
+    if (passwords !== null) {
+      const saveData = async () => {
+        if (isTauri()) {
+          await saveToFile("passwords.json", passwords);
+        } else {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(passwords));
+        }
+      };
+      saveData();
+    }
   }, [passwords]);
 
   const addPassword = (entry: PasswordEntry) => {
-    setPasswords([...passwords, { ...entry, id: crypto.randomUUID() }]);
-    setIsDialogOpen(false);
+    if (passwords !== null) {
+      setPasswords([...passwords, { ...entry, id: crypto.randomUUID() }]);
+      setIsDialogOpen(false);
+  
+    }    
   };
 
   const updatePassword = (updatedEntry: PasswordEntry) => {
@@ -56,6 +73,11 @@ export default function App() {
       setSelectedPassword(null);
     }
   };
+
+  if (passwords === null) {
+    return <div>Lade Daten...</div>; // Zeige Ladezustand, solange Daten nicht geladen sind
+  }
+
 
   return (
     <div className="p-4">
@@ -80,11 +102,7 @@ export default function App() {
         >
           Bearbeiten
         </Button>
-        <Button
-          onClick={deletePassword}
-          disabled={!selectedPassword}
-          variant="destructive"
-        >
+        <Button onClick={deletePassword} disabled={!selectedPassword} variant="destructive">
           Löschen
         </Button>
       </div>

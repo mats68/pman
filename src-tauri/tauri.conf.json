@@ -5,7 +5,7 @@
   "identifier": "com.pman.app",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:5173",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
@@ -31,5 +31,14 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "tauri": {
+    "features": [
+      "fs-read-text", 
+      "fs-write-text", 
+      "fs-read-dir", 
+      "fs-exists"
+    ]
   }
+
 }

@@ -1,4 +1,6 @@
-import { writeTextFile, readTextFile, BaseDirectory } from "@tauri-apps/api/fs";
+// import { writeTextFile, readTextFile, BaseDirectory } from "@tauri-apps/api/fs";
+import { writeTextFile, readTextFile, BaseDirectory } from '@tauri-apps/plugin-fs';
+// const { writeTextFile, readTextFile, BaseDirectory } = window.__TAURI__.fs; 
 
 // Speichert Daten in einer Datei
 export const saveToFile = async (filename: string, data: any) => {
