@@ -1,8 +1,23 @@
+import { useState } from "react";
+import { LoginDialog } from "./components/LoginDialog";
 
 export default function App() {
+  const [isLoginOpen, setLoginOpen] = useState(true);
+
+  const handleLogin = (password: string) => {
+    console.log("Master-Passwort:", password);
+    setLoginOpen(false); // Dialog schließen, wenn das Passwort eingegeben wurde
+  };
+
   return (
-    <div className="bg-blue-500 text-white p-4">
-      <div className="text-blue-300 text-2xl font-bold">Tailwind funktioniert!</div>
+    <div>
+      <LoginDialog isOpen={isLoginOpen} onSubmit={handleLogin} />
+      {!isLoginOpen && (
+        <div>
+          <h1 className="text-2xl font-bold">Passwortmanager</h1>
+          {/* Hauptinhalt des Passwortmanagers */}
+        </div>
+      )}
     </div>
   );
 }
