@@ -106,11 +106,6 @@ export default function App() {
           Löschen
         </Button>
       </div>
-      <PasswordTable
-        passwords={passwords}
-        selectedPassword={selectedPassword}
-        onRowClick={setSelectedPassword}
-      />
       {isDialogOpen && (
         <PasswordForm
           onSubmit={dialogMode === "add" ? addPassword : updatePassword}
@@ -118,6 +113,11 @@ export default function App() {
           onClose={() => setIsDialogOpen(false)}
         />
       )}
+      <PasswordTable
+        passwords={passwords}
+        selectedPassword={selectedPassword}
+        onRowClick={setSelectedPassword}
+      />
     </div>
   );
 }

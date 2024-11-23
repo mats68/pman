@@ -10,6 +10,7 @@
     "frontendDist": "../dist"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "pman",
@@ -30,14 +31,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
-  },
-  "tauri": {
-    "features": [
-      "fs-read-text", 
-      "fs-write-text", 
-      "fs-read-dir", 
-      "fs-exists"
     ]
   }
 
