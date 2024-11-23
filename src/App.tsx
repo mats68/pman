@@ -1,16 +1,44 @@
 // src/App.tsx
 
-import { useState } from "react";
-import { PasswordTable } from "./components/PasswordTable";
+import { useEffect, useState } from "react";
+import { saveToFile, loadFromFile } from "./utils/file";
+import { saveToStorage, loadFromStorage } from "./utils/storage";
+import { isTauri } from "./utils/env";
 import { PasswordEntry } from "./types/password";
-import { Button } from "@/components/ui/button";
+import { PasswordTable } from "./components/PasswordTable";
 import { PasswordForm } from "./components/PasswordForm";
+import { Button } from "@/components/ui/button";
 
 export default function App() {
   const [passwords, setPasswords] = useState<PasswordEntry[]>([]);
   const [selectedPassword, setSelectedPassword] = useState<PasswordEntry | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false); // Dialog für Hinzufügen/Bearbeiten
-  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add"); // Modus für den Dialog
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
+
+  // Daten laden (Tauri oder Browser)
+  useEffect(() => {
+    const loadData = async () => {
+      const data = isTauri()
+        ? await loadFromFile("passwords.json") // Tauri
+        : loadFromStorage("passwords"); // Browser
+      if (data) {
+        setPasswords(data);
+      }
+    };
+    loadData();
+  }, []);
+
+  // Daten speichern (Tauri oder Browser)
+  useEffect(() => {
+    const saveData = async () => {
+      if (isTauri()) {
+        await saveToFile("passwords.json", passwords); // Tauri
+      } else {
+        saveToStorage("passwords", passwords); // Browser
+      }
+    };
+    saveData();
+  }, [passwords]);
 
   const addPassword = (entry: PasswordEntry) => {
     setPasswords([...passwords, { ...entry, id: crypto.randomUUID() }]);
@@ -25,14 +53,13 @@ export default function App() {
   const deletePassword = () => {
     if (selectedPassword) {
       setPasswords(passwords.filter((entry) => entry.id !== selectedPassword.id));
-      setSelectedPassword(null); // Auswahl zurücksetzen
+      setSelectedPassword(null);
     }
   };
 
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Passwortmanager</h1>
-      {/* Buttons */}
       <div className="mb-4 flex gap-4">
         <Button
           onClick={() => {
@@ -49,21 +76,23 @@ export default function App() {
               setIsDialogOpen(true);
             }
           }}
-          disabled={!selectedPassword} // Nur aktiv, wenn eine Zeile ausgewählt ist
+          disabled={!selectedPassword}
         >
           Bearbeiten
         </Button>
-        <Button onClick={deletePassword} disabled={!selectedPassword} variant="destructive">
+        <Button
+          onClick={deletePassword}
+          disabled={!selectedPassword}
+          variant="destructive"
+        >
           Löschen
         </Button>
       </div>
-      {/* Passworttabelle */}
       <PasswordTable
         passwords={passwords}
         selectedPassword={selectedPassword}
         onRowClick={setSelectedPassword}
       />
-      {/* Dialog */}
       {isDialogOpen && (
         <PasswordForm
           onSubmit={dialogMode === "add" ? addPassword : updatePassword}
