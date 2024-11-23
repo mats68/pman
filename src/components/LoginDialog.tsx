@@ -1,41 +1,35 @@
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import React, { useState } from "react";
 
-interface LoginDialogProps {
-  isOpen: boolean;
-  onSubmit: (password: string) => void;
+export interface LoginDialogProps {
+  onLogin: (key: string) => void;
 }
 
-export const LoginDialog = ({ isOpen, onSubmit }: LoginDialogProps) => {
+const LoginDialog: React.FC<LoginDialogProps> = ({ onLogin }) => {
   const [password, setPassword] = useState("");
 
-  const handleSubmit = () => {
-    if (password.trim()) {
-      onSubmit(password); // Master-Passwort an übergeordneten State weitergeben
-      setPassword(""); // Passwortfeld leeren
+  const handleLogin = () => {
+    if (password.trim() === "") {
+      alert("Bitte geben Sie ein Passwort ein!");
+      return;
     }
+    onLogin(password.trim());
   };
 
   return (
-    <Dialog open={isOpen}>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Login</DialogTitle>
-        </DialogHeader>
-        <div>
-          <Input
-            type="password"
-            placeholder="Master-Passwort"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        <DialogFooter>
-          <Button onClick={handleSubmit}>Einloggen</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <div className="login-dialog">
+      <h1>Master-Passwort</h1>
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Master-Passwort eingeben"
+        className="border p-2 rounded"
+      />
+      <button onClick={handleLogin} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">
+        Login
+      </button>
+    </div>
   );
 };
+
+export default LoginDialog;

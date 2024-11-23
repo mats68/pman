@@ -37,7 +37,6 @@ export const PasswordForm = ({ onSubmit, initialData, onClose }: PasswordFormPro
       </div>
       <div className="mb-4">
         <Input
-          type="password"
           placeholder="Passwort"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

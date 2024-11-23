@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 
 const STORAGE_KEY = "passwords";
 
-export default function App() {
+const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   const [passwords, setPasswords] = useState<PasswordEntry[] | null>(null); // Initial NULL, um Überschreiben zu vermeiden
   const [selectedPassword, setSelectedPassword] = useState<PasswordEntry | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -21,18 +21,19 @@ export default function App() {
   useEffect(() => {
     const loadData = async () => {
       if (isTauri()) {
-        const fileData = await loadFromFile("passwords.json");
+        const fileData = await loadFromFile("passwords.json", secretKey);
         if (fileData) {
           setPasswords(fileData); // Daten aus Datei setzen
         } else {
           setPasswords([]); // Keine Daten gefunden, leeres Array setzen
         }
       } else {
-        const savedPasswords = localStorage.getItem(STORAGE_KEY);
+        
+        const savedPasswords = loadFromStorage(STORAGE_KEY, secretKey);
         if (savedPasswords) {
-          setPasswords(JSON.parse(savedPasswords)); // Daten aus localStorage setzen
+          setPasswords(savedPasswords);
         } else {
-          setPasswords([]); // Keine Daten gefunden, leeres Array setzen
+          setPasswords([]); 
         }
       }
     };
@@ -45,9 +46,9 @@ export default function App() {
     if (passwords !== null) {
       const saveData = async () => {
         if (isTauri()) {
-          await saveToFile("passwords.json", passwords);
+          await saveToFile("passwords.json", passwords, secretKey);
         } else {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(passwords));
+          saveToStorage(STORAGE_KEY, passwords, secretKey)
         }
       };
       saveData();
@@ -121,3 +122,5 @@ export default function App() {
     </div>
   );
 }
+
+export default App;
