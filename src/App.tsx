@@ -16,24 +16,28 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   const [selectedPassword, setSelectedPassword] = useState<PasswordEntry | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
+  const [error, setError] = useState(false);
 
   // Daten laden (Tauri oder Browser)
   useEffect(() => {
     const loadData = async () => {
       if (isTauri()) {
-        const fileData = await loadFromFile("passwords.json", secretKey);
-        if (fileData) {
-          setPasswords(fileData); // Daten aus Datei setzen
-        } else {
-          setPasswords([]); // Keine Daten gefunden, leeres Array setzen
+        try {
+          const fileData = await loadFromFile(secretKey);
+          if (fileData) {
+            setPasswords(fileData);
+          } else {
+            setPasswords([]);
+          }
+        } catch (error) {
+          setError(true);
         }
       } else {
-        
         const savedPasswords = loadFromStorage(STORAGE_KEY, secretKey);
         if (savedPasswords) {
           setPasswords(savedPasswords);
         } else {
-          setPasswords([]); 
+          setPasswords([]);
         }
       }
     };
@@ -46,9 +50,9 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
     if (passwords !== null) {
       const saveData = async () => {
         if (isTauri()) {
-          await saveToFile("passwords.json", passwords, secretKey);
+          await saveToFile(passwords, secretKey);
         } else {
-          saveToStorage(STORAGE_KEY, passwords, secretKey)
+          saveToStorage(STORAGE_KEY, passwords, secretKey);
         }
       };
       saveData();
@@ -59,12 +63,15 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
     if (passwords !== null) {
       setPasswords([...passwords, { ...entry, id: crypto.randomUUID() }]);
       setIsDialogOpen(false);
-  
-    }    
+    }
   };
 
   const updatePassword = (updatedEntry: PasswordEntry) => {
     setPasswords(passwords.map((entry) => (entry.id === updatedEntry.id ? updatedEntry : entry)));
+    setIsDialogOpen(false);
+  };
+
+  const cancelEdit = () => {
     setIsDialogOpen(false);
   };
 
@@ -75,14 +82,18 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
     }
   };
 
+  if (error) {
+    return <div>Falsches Passwort</div>;
+  }
+
   if (passwords === null) {
     return <div>Lade Daten...</div>; // Zeige Ladezustand, solange Daten nicht geladen sind
   }
 
-
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Passwortmanager</h1>
+      {!isDialogOpen && (
       <div className="mb-4 flex gap-4">
         <Button
           onClick={() => {
@@ -107,20 +118,38 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
           Löschen
         </Button>
       </div>
+      )}
       {isDialogOpen && (
         <PasswordForm
           onSubmit={dialogMode === "add" ? addPassword : updatePassword}
+          onCancelEdit={cancelEdit}
           initialData={dialogMode === "edit" ? selectedPassword : undefined}
           onClose={() => setIsDialogOpen(false)}
         />
       )}
-      <PasswordTable
-        passwords={passwords}
-        selectedPassword={selectedPassword}
-        onRowClick={setSelectedPassword}
-      />
+      <div className="flex">
+        <div className="w-1/2">
+          <PasswordTable
+            passwords={passwords}
+            selectedPassword={selectedPassword}
+            onRowClick={setSelectedPassword}
+          />
+        </div>
+        <div className="w-1/2 border-l pl-4">
+          {selectedPassword ? (
+            <div>
+              <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
+              <p className="mt-2 text-sm text-gray-600">
+                {selectedPassword.notes}
+              </p>
+            </div>
+          ) : (
+            <p className="text-gray-500">Keine Zeile ausgewählt.</p>
+          )}
+        </div>
+      </div>
     </div>
   );
-}
+};
 
 export default App;

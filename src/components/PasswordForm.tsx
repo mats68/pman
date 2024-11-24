@@ -1,21 +1,43 @@
 // src/components/PasswordForm.tsx
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PasswordEntry } from "../types/password";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { loadCategories } from "@/utils/file";
+import { default_categeories } from "@/data/categories";
+import { isTauri } from "@/utils/env";
 
 interface PasswordFormProps {
   onSubmit: (entry: PasswordEntry) => void;
+  onCancelEdit: () => void;
   initialData?: PasswordEntry;
   onClose: () => void;
 }
 
-export const PasswordForm = ({ onSubmit, initialData, onClose }: PasswordFormProps) => {
+export const PasswordForm = ({
+  onSubmit,
+  onCancelEdit,
+  initialData,
+  onClose,
+}: PasswordFormProps) => {
   const [title, setTitle] = useState(initialData?.title || "");
   const [username, setUsername] = useState(initialData?.username || "");
   const [password, setPassword] = useState(initialData?.password || "");
   const [category, setCategory] = useState(initialData?.category || "");
+  const [notes, setNotes] = useState(initialData?.notes || "");
+  const [categories, setCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      let loadedCategories = default_categeories;
+      if (isTauri()) {
+        loadedCategories = await loadCategories();
+      }
+      setCategories(loadedCategories);
+    };
+    fetchCategories();
+  }, []);
 
   const handleSubmit = () => {
     if (title && username && password && category) {
@@ -25,32 +47,79 @@ export const PasswordForm = ({ onSubmit, initialData, onClose }: PasswordFormPro
   };
 
   return (
-    <div className="p-4 border rounded shadow bg-white">
-      <h2 className="text-lg font-bold mb-4">
-        {initialData ? "Passwort bearbeiten" : "Neues Passwort hinzufügen"}
-      </h2>
-      <div className="mb-4">
-        <Input placeholder="Titel" value={title} onChange={(e) => setTitle(e.target.value)} />
-      </div>
-      <div className="mb-4">
-        <Input placeholder="Benutzername" value={username} onChange={(e) => setUsername(e.target.value)} />
-      </div>
-      <div className="mb-4">
-        <Input
-          placeholder="Passwort"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-      </div>
-      <div className="mb-4">
-        <Input placeholder="Kategorie" value={category} onChange={(e) => setCategory(e.target.value)} />
-      </div>
-      <div className="flex gap-4">
-        <Button onClick={handleSubmit}>{initialData ? "Speichern" : "Hinzufügen"}</Button>
-        <Button variant="secondary" onClick={onClose}>
+    <form className="space-y-4">
+      <div className="flex">
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Speichern
+        </Button>
+        <Button type="button" onClick={onCancelEdit} className="ml-4 text-white px-4 py-2 rounded">
           Abbrechen
         </Button>
       </div>
-    </div>
+      <div className="flex">
+        <div className="w-1/2">
+          <div>
+            <label className="block font-medium">Titel</label>
+            <Input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className="w-full border rounded p-2"
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium">Benutzername</label>
+            <Input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="w-full border rounded p-2"
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium">Passwort</label>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border rounded p-2"
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium">Kategorie</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full border rounded p-2"
+            >
+              <option value="">Kategorie auswählen</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+        <div className="ml-2 w-1/2">
+          <div>
+            <label className="block font-medium">Notizen</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full border rounded p-2"
+              rows={4}
+            />
+          </div>
+        </div>
+      </div>
+    </form>
   );
 };

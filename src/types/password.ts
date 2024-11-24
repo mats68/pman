@@ -4,7 +4,6 @@ export interface PasswordEntry {
     username: string;
     password: string;
     category: string;
-    url?: string;
     notes?: string;
   }
   

@@ -17,9 +17,9 @@ interface PasswordTableProps {
 export const PasswordTable = ({ passwords, selectedPassword, onRowClick }: PasswordTableProps) => {
   const columns: ColumnDef<PasswordEntry>[] = [
     { accessorKey: "title", header: "Titel" },
+    { accessorKey: "category", header: "Kategorie" },
     { accessorKey: "username", header: "Benutzername" },
     { accessorKey: "password", header: "Passwort" },
-    { accessorKey: "category", header: "Kategorie" },
   ];
 
   const table = useReactTable({
