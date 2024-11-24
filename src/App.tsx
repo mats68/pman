@@ -9,7 +9,7 @@ import { PasswordTable } from "./components/PasswordTable";
 import { PasswordForm } from "./components/PasswordForm";
 import { Button } from "@/components/ui/button";
 import Notes from "./components/Notes";
-import { ArrowBigRight } from "lucide-react";
+import { ArrowBigRight, Pencil, SquarePlus, Trash2 } from "lucide-react";
 
 declare const window: {
   find: any;
@@ -69,26 +69,25 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
     return () => clearTimeout(timeout);
   }, [filterText, passwords]);
 
-// Copy User, PW: Event Listener für Tastenanschläge
-useEffect(() => {
-  const handleKeyDown = (event: KeyboardEvent) => {
-    if (!selectedPassword) {
-      return;
-    }
+  // Copy User, PW: Event Listener für Tastenanschläge
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!selectedPassword) {
+        return;
+      }
 
-    if (event.key === "F9") {
-      navigator.clipboard.writeText(selectedPassword.username);
-    } else if (event.key === "F10") {
-      navigator.clipboard.writeText(selectedPassword.password);
-    }
-  };
+      if (event.key === "F9") {
+        navigator.clipboard.writeText(selectedPassword.username);
+      } else if (event.key === "F10") {
+        navigator.clipboard.writeText(selectedPassword.password);
+      }
+    };
 
-  window.addEventListener("keydown", handleKeyDown);
-  return () => {
-    window.removeEventListener("keydown", handleKeyDown);
-  };
-}, [selectedPassword]);
-
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [selectedPassword]);
 
   const saveData = async () => {
     if (passwords !== null) {
@@ -146,13 +145,14 @@ useEffect(() => {
       setSelectedPassword(filteredPasswords[0]);
     }
     if (selectedPassword) {
+      // const res = window.find(filterText, false, false, true);
       const res = window.find(filterText);
       if (!res) {
         const index = filteredPasswords.findIndex((p) => p.id === selectedPassword.id);
         if (index > -1 && filteredPasswords.length > index + 1) {
           setSelectedPassword(filteredPasswords[index + 1]);
         } else {
-          alert('Keine weiteren Treffer')
+          alert("Keine weiteren Treffer");
         }
       }
     }
@@ -168,53 +168,8 @@ useEffect(() => {
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Passwortmanager</h1>
       {!isDialogOpen && (
         <div>
-          <div className="mb-4 flex gap-4">
-            <Button
-              onClick={() => {
-                saveData();
-              }}
-              disabled={!hasChanges}
-              className="bg-blue-500 text-white px-4 py-2 rounded mr-8"
-            >
-              Speichern
-            </Button>
-
-            <Button
-              onClick={() => {
-                setDialogMode("add");
-                setIsDialogOpen(true);
-              }}
-            >
-              Hinzufügen
-            </Button>
-            <Button
-              onClick={() => {
-                if (selectedPassword) {
-                  setDialogMode("edit");
-                  setIsDialogOpen(true);
-                }
-              }}
-              disabled={!selectedPassword}
-            >
-              Bearbeiten
-            </Button>
-            <Button onClick={deletePassword} disabled={!selectedPassword} variant="destructive">
-              Löschen
-            </Button>
-            <input
-              type="text"
-              placeholder="Filter eingeben..."
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              className="w-[200px] p-2 border rounded mb-4"
-            />
-            <Button onClick={searchWindow} disabled={!filterText}>
-              <ArrowBigRight />
-            </Button>
-          </div>
           <div>
             {filteredPasswords && (
               <div className="flex">
@@ -238,6 +193,52 @@ useEffect(() => {
                 </div>
               </div>
             )}
+          </div>
+          <div className="footer">
+            <div className="flex gap-4">
+              <Button
+                onClick={() => {
+                  saveData();
+                }}
+                disabled={!hasChanges}
+                className="bg-blue-500 text-white px-4 py-2 rounded mr-8"
+              >
+                Speichern
+              </Button>
+
+              <Button
+                onClick={() => {
+                  setDialogMode("add");
+                  setIsDialogOpen(true);
+                }}
+              >
+                <SquarePlus />
+              </Button>
+              <Button
+                onClick={() => {
+                  if (selectedPassword) {
+                    setDialogMode("edit");
+                    setIsDialogOpen(true);
+                  }
+                }}
+                disabled={!selectedPassword}
+              >
+                <Pencil />
+              </Button>
+              <Button onClick={deletePassword} disabled={!selectedPassword} variant="destructive">
+                <Trash2 />
+              </Button>
+              <input
+                type="text"
+                placeholder="Filter eingeben..."
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                className="w-[200px] p-2 border rounded mb-4"
+              />
+              <Button onClick={searchWindow} disabled={!filterText}>
+                <ArrowBigRight />
+              </Button>
+            </div>
           </div>
         </div>
       )}
