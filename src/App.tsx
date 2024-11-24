@@ -151,6 +151,8 @@ useEffect(() => {
         const index = filteredPasswords.findIndex((p) => p.id === selectedPassword.id);
         if (index > -1 && filteredPasswords.length > index + 1) {
           setSelectedPassword(filteredPasswords[index + 1]);
+        } else {
+          alert('Keine weiteren Treffer')
         }
       }
     }
@@ -216,7 +218,7 @@ useEffect(() => {
           <div>
             {filteredPasswords && (
               <div className="flex">
-                <div className="w-1/2">
+                <div className="w-1/2 max-h overflow-y-auto">
                   <PasswordTable
                     passwords={filteredPasswords}
                     selectedPassword={selectedPassword}
@@ -224,7 +226,7 @@ useEffect(() => {
                     onRowClick={setSelectedPassword}
                   />
                 </div>
-                <div className="w-1/2 border-l pl-4">
+                <div className="w-1/2 border-l pl-4 max-h">
                   {selectedPassword ? (
                     <div>
                       <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
