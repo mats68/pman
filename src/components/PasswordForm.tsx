@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { loadCategories } from "@/utils/file";
 import { default_categeories } from "@/data/categories";
 import { isTauri } from "@/utils/env";
+import MarkdownEditor from "./MarkdownEditor";
 
 interface PasswordFormProps {
   onSubmit: (entry: PasswordEntry) => void;
@@ -111,13 +112,8 @@ export const PasswordForm = ({
         </div>
         <div className="ml-2 w-1/2">
           <div>
-            <label className="block font-medium">Notizen</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              className="w-full border rounded p-2"
-              rows={20}
-            />
+            <label className="ml-4 block font-medium">Notizen</label>
+            <MarkdownEditor notes={notes} onChange={(val) => setNotes(val)}/>
           </div>
         </div>
       </div>
