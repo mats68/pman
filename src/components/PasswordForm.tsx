@@ -40,8 +40,8 @@ export const PasswordForm = ({
   }, []);
 
   const handleSubmit = () => {
-    if (title && username && password && category) {
-      onSubmit({ id: initialData?.id || "", title, username, password, category });
+    if (title && category) {
+      onSubmit({ id: initialData?.id || "", title, category, username, password, notes });
       onClose();
     }
   };
@@ -62,6 +62,22 @@ export const PasswordForm = ({
       </div>
       <div className="flex">
         <div className="w-1/2">
+          <div>
+            <label className="block font-medium">Kategorie</label>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              className="w-full border rounded p-2"
+            >
+              <option value="">Kategorie auswählen</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block font-medium">Titel</label>
             <Input
@@ -91,22 +107,6 @@ export const PasswordForm = ({
               className="w-full border rounded p-2"
             />
           </div>
-
-          <div>
-            <label className="block font-medium">Kategorie</label>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="w-full border rounded p-2"
-            >
-              <option value="">Kategorie auswählen</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-          </div>
         </div>
         <div className="ml-2 w-1/2">
           <div>
@@ -115,7 +115,7 @@ export const PasswordForm = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               className="w-full border rounded p-2"
-              rows={4}
+              rows={20}
             />
           </div>
         </div>

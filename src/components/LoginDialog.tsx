@@ -9,6 +9,13 @@ export interface LoginDialogProps {
 const LoginDialog: React.FC<LoginDialogProps> = ({ onLogin }) => {
   const [password, setPassword] = useState("");
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // Verhindert das Standardverhalten
+      handleLogin(); // Speichert die Daten
+    }
+  };
+
   const handleLogin = () => {
     if (password.trim() === "") {
       alert("Bitte geben Sie ein Passwort ein!");
@@ -28,6 +35,7 @@ const LoginDialog: React.FC<LoginDialogProps> = ({ onLogin }) => {
           onChange={(e) => setPassword(e.target.value)}
           placeholder="Master-Passwort eingeben"
           className="w-[40]"
+          onKeyDown={handleKeyDown}
         />
       </div>
       <Button onClick={handleLogin} className="mt-2 bg-blue-500 text-white px-4 py-2 rounded">

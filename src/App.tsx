@@ -8,6 +8,7 @@ import { PasswordEntry } from "./types/password";
 import { PasswordTable } from "./components/PasswordTable";
 import { PasswordForm } from "./components/PasswordForm";
 import { Button } from "@/components/ui/button";
+import Notes from "./components/Notes";
 
 const STORAGE_KEY = "passwords";
 
@@ -16,6 +17,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   const [selectedPassword, setSelectedPassword] = useState<PasswordEntry | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
+  const [hasChanges, setHasChanges] = useState(false);
   const [error, setError] = useState(false);
 
   // Daten laden (Tauri oder Browser)
@@ -44,30 +46,34 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
     loadData();
   }, []);
 
-  // Daten speichern (Tauri oder Browser)
-  useEffect(() => {
-    // Speichern nur ausführen, wenn passwords bereits geladen wurden (nicht NULL)
+  // Daten geändert
+  // useEffect(() => {
+  //   setHasChanges(true);
+  // }, [passwords]);
+
+  const saveData = async () => {
     if (passwords !== null) {
-      const saveData = async () => {
-        if (isTauri()) {
-          await saveToFile(passwords, secretKey);
-        } else {
-          saveToStorage(STORAGE_KEY, passwords, secretKey);
-        }
-      };
-      saveData();
+      if (isTauri()) {
+        await saveToFile(passwords, secretKey);
+      } else {
+        saveToStorage(STORAGE_KEY, passwords, secretKey);
+      }
     }
-  }, [passwords]);
+  };
 
   const addPassword = (entry: PasswordEntry) => {
     if (passwords !== null) {
+      console.log("entry", entry);
       setPasswords([...passwords, { ...entry, id: crypto.randomUUID() }]);
+      setHasChanges(true);      
       setIsDialogOpen(false);
     }
   };
 
   const updatePassword = (updatedEntry: PasswordEntry) => {
+    console.log("updatedEntry", updatedEntry);
     setPasswords(passwords.map((entry) => (entry.id === updatedEntry.id ? updatedEntry : entry)));
+    setHasChanges(true);      
     setIsDialogOpen(false);
   };
 
@@ -78,6 +84,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   const deletePassword = () => {
     if (selectedPassword) {
       setPasswords(passwords.filter((entry) => entry.id !== selectedPassword.id));
+      setHasChanges(true);      
       setSelectedPassword(null);
     }
   };
@@ -94,30 +101,62 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Passwortmanager</h1>
       {!isDialogOpen && (
-      <div className="mb-4 flex gap-4">
-        <Button
-          onClick={() => {
-            setDialogMode("add");
-            setIsDialogOpen(true);
-          }}
-        >
-          Hinzufügen
-        </Button>
-        <Button
-          onClick={() => {
-            if (selectedPassword) {
-              setDialogMode("edit");
-              setIsDialogOpen(true);
-            }
-          }}
-          disabled={!selectedPassword}
-        >
-          Bearbeiten
-        </Button>
-        <Button onClick={deletePassword} disabled={!selectedPassword} variant="destructive">
-          Löschen
-        </Button>
-      </div>
+        <div>
+          <div className="mb-4 flex gap-4">
+            <Button
+              onClick={() => {
+                saveData();
+              }}
+              disabled={!hasChanges}
+              className="bg-blue-500 text-white px-4 py-2 rounded mr-8"
+            >
+              Speichern
+            </Button>
+
+            <Button
+              onClick={() => {
+                setDialogMode("add");
+                setIsDialogOpen(true);
+              }}
+            >
+              Hinzufügen
+            </Button>
+            <Button
+              onClick={() => {
+                if (selectedPassword) {
+                  setDialogMode("edit");
+                  setIsDialogOpen(true);
+                }
+              }}
+              disabled={!selectedPassword}
+            >
+              Bearbeiten
+            </Button>
+            <Button onClick={deletePassword} disabled={!selectedPassword} variant="destructive">
+              Löschen
+            </Button>
+          </div>
+          <div className="flex">
+            <div className="w-1/2">
+              <PasswordTable
+                passwords={passwords}
+                selectedPassword={selectedPassword}
+                onRowClick={setSelectedPassword}
+              />
+            </div>
+            <div className="w-1/2 border-l pl-4">
+              {selectedPassword ? (
+                <div>
+                  <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
+                  <Notes notes={selectedPassword.notes}/>
+                  {/* <div className="mt-2text-gray-600 whitespace-pre">{selectedPassword.notes}</div> */}
+                </div>
+              ) : (
+                <p className="text-gray-500">Keine Zeile ausgewählt.</p>
+              )}
+            </div>
+          </div>
+        </div>
       )}
       {isDialogOpen && (
         <PasswordForm
@@ -127,27 +166,6 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
           onClose={() => setIsDialogOpen(false)}
         />
       )}
-      <div className="flex">
-        <div className="w-1/2">
-          <PasswordTable
-            passwords={passwords}
-            selectedPassword={selectedPassword}
-            onRowClick={setSelectedPassword}
-          />
-        </div>
-        <div className="w-1/2 border-l pl-4">
-          {selectedPassword ? (
-            <div>
-              <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
-              <p className="mt-2 text-sm text-gray-600">
-                {selectedPassword.notes}
-              </p>
-            </div>
-          ) : (
-            <p className="text-gray-500">Keine Zeile ausgewählt.</p>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

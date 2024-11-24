@@ -11,9 +11,14 @@ This template should help get you started developing with Tauri, React and Types
 
 
 --
+- font inter from google
+
+
 - on enter login form
-- save erst auf button klick
 - fett und link in notes
 - sort by name
 - search: filter and highlight
 - PasswordForm.tsx cancel
+
+
+- save erst auf button klick
