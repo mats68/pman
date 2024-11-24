@@ -52,9 +52,10 @@ export const PasswordForm = ({
         <Button
           type="button"
           onClick={handleSubmit}
-          className="bg-blue-500 text-white px-4 py-2 rounded"
+          className="bg-blue-500 text-white px-4 py-2 rounded w-[105px]"
+          disabled={!(title && category)}
         >
-          Speichern
+          Ok
         </Button>
         <Button type="button" onClick={onCancelEdit} className="ml-4 text-white px-4 py-2 rounded">
           Abbrechen

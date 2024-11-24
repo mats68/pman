@@ -53,17 +53,19 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
 
   const saveData = async () => {
     if (passwords !== null) {
+      setPasswords(() => [...passwords].sort((a, b) => a.title.localeCompare(b.title)));
       if (isTauri()) {
         await saveToFile(passwords, secretKey);
       } else {
         saveToStorage(STORAGE_KEY, passwords, secretKey);
       }
+      setHasChanges(false);
     }
   };
 
   const addPassword = (entry: PasswordEntry) => {
+    console.log("entry", entry);
     if (passwords !== null) {
-      console.log("entry", entry);
       setPasswords([...passwords, { ...entry, id: crypto.randomUUID() }]);
       setHasChanges(true);      
       setIsDialogOpen(false);
@@ -149,7 +151,6 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
                 <div>
                   <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
                   <Notes notes={selectedPassword.notes}/>
-                  {/* <div className="mt-2text-gray-600 whitespace-pre">{selectedPassword.notes}</div> */}
                 </div>
               ) : (
                 <p className="text-gray-500">Keine Zeile ausgewählt.</p>
