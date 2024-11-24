@@ -103,7 +103,6 @@ export const PasswordForm = ({
           <div>
             <label className="block font-medium">Passwort</label>
             <Input
-              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="w-full border rounded p-2"

@@ -9,6 +9,11 @@ import { PasswordTable } from "./components/PasswordTable";
 import { PasswordForm } from "./components/PasswordForm";
 import { Button } from "@/components/ui/button";
 import Notes from "./components/Notes";
+import { ArrowBigRight } from "lucide-react";
+
+declare const window: {
+  find: any;
+} & Window;
 
 const STORAGE_KEY = "passwords";
 
@@ -57,11 +62,33 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
       const filtered = passwords.filter((password) =>
         Object.values(password).join(" ").toLowerCase().includes(lowerCaseFilter)
       );
+      setSelectedPassword(null);
       setFilteredPasswords(filtered);
     }, 300); // Verzögerung von 300ms
 
     return () => clearTimeout(timeout);
   }, [filterText, passwords]);
+
+// Copy User, PW: Event Listener für Tastenanschläge
+useEffect(() => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (!selectedPassword) {
+      return;
+    }
+
+    if (event.key === "F9") {
+      navigator.clipboard.writeText(selectedPassword.username);
+    } else if (event.key === "F10") {
+      navigator.clipboard.writeText(selectedPassword.password);
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+  return () => {
+    window.removeEventListener("keydown", handleKeyDown);
+  };
+}, [selectedPassword]);
+
 
   const saveData = async () => {
     if (passwords !== null) {
@@ -77,7 +104,6 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   };
 
   const addPassword = (entry: PasswordEntry) => {
-    console.log("entry", entry);
     if (passwords !== null) {
       setPasswords(() => {
         const id = crypto.randomUUID();
@@ -92,7 +118,6 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   };
 
   const updatePassword = (updatedEntry: PasswordEntry) => {
-    console.log("updatedEntry", updatedEntry);
     if (passwords !== null) {
       setPasswords(passwords.map((entry) => (entry.id === updatedEntry.id ? updatedEntry : entry)));
       setHasChanges(true);
@@ -110,6 +135,24 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
       setPasswords(passwords.filter((entry) => entry.id !== selectedPassword.id));
       setHasChanges(true);
       setSelectedPassword(null);
+    }
+  };
+
+  const searchWindow = () => {
+    if (!filteredPasswords || filteredPasswords.length === 0) {
+      return;
+    }
+    if (!selectedPassword) {
+      setSelectedPassword(filteredPasswords[0]);
+    }
+    if (selectedPassword) {
+      const res = window.find(filterText);
+      if (!res) {
+        const index = filteredPasswords.findIndex((p) => p.id === selectedPassword.id);
+        if (index > -1 && filteredPasswords.length > index + 1) {
+          setSelectedPassword(filteredPasswords[index + 1]);
+        }
+      }
     }
   };
 
@@ -164,28 +207,35 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
               placeholder="Filter eingeben..."
               value={filterText}
               onChange={(e) => setFilterText(e.target.value)}
-              className="w-full p-2 border rounded mb-4"
+              className="w-[200px] p-2 border rounded mb-4"
             />
+            <Button onClick={searchWindow} disabled={!filterText}>
+              <ArrowBigRight />
+            </Button>
           </div>
-          <div className="flex">
-            <div className="w-1/2">
-              <PasswordTable
-                passwords={filteredPasswords}
-                selectedPassword={selectedPassword}
-                filterText={filterText}
-                onRowClick={setSelectedPassword}
-              />
-            </div>
-            <div className="w-1/2 border-l pl-4">
-              {selectedPassword ? (
-                <div>
-                  <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
-                  <Notes notes={selectedPassword.notes} filterText={filterText}/>
+          <div>
+            {filteredPasswords && (
+              <div className="flex">
+                <div className="w-1/2">
+                  <PasswordTable
+                    passwords={filteredPasswords}
+                    selectedPassword={selectedPassword}
+                    filterText={filterText}
+                    onRowClick={setSelectedPassword}
+                  />
                 </div>
-              ) : (
-                <p className="text-gray-500">Keine Zeile ausgewählt.</p>
-              )}
-            </div>
+                <div className="w-1/2 border-l pl-4">
+                  {selectedPassword ? (
+                    <div>
+                      <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
+                      <Notes notes={selectedPassword.notes} filterText={filterText} />
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">Keine Zeile ausgewählt.</p>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

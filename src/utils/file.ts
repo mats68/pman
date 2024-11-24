@@ -25,14 +25,22 @@ export const saveToFile = async (data: any, secretKey: string) => {
 };
 
 export const loadFromFile = async (key: string) => {
+  let fn
+  let encryptedData
   try {
-    const fn = await getFullFileName(FILE_NAME);
-    const encryptedData = await readTextFile(fn);
+    fn = await getFullFileName(FILE_NAME);
+    encryptedData = await readTextFile(fn);
+  } catch (error) {
+    return null;
+  }
+  try {
     const decryptedData = decryptData(encryptedData, key);
     return decryptedData;
   } catch (error) {
+    alert(`error ${fn} ${error}`)
     throw new Error("Fehler beim Laden der Datei:");
   }
+
 };
 
 export const loadCategories = async (): Promise<string[]> => {
