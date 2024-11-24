@@ -53,12 +53,13 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
 
   const saveData = async () => {
     if (passwords !== null) {
-      setPasswords(() => [...passwords].sort((a, b) => a.title.localeCompare(b.title)));
+      const sorted = [...passwords].sort((a, b) => a.title.localeCompare(b.title));
       if (isTauri()) {
-        await saveToFile(passwords, secretKey);
+        await saveToFile(sorted, secretKey);
       } else {
-        saveToStorage(STORAGE_KEY, passwords, secretKey);
+        saveToStorage(STORAGE_KEY, sorted, secretKey);
       }
+      setPasswords(sorted);
       setHasChanges(false);
     }
   };
@@ -66,17 +67,27 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   const addPassword = (entry: PasswordEntry) => {
     console.log("entry", entry);
     if (passwords !== null) {
-      setPasswords([...passwords, { ...entry, id: crypto.randomUUID() }]);
-      setHasChanges(true);      
+      setPasswords(() => {
+        const id = crypto.randomUUID()
+        const newPasswords = [...passwords, { ...entry, id }]
+        const sel = newPasswords.find(n => n.id === id)
+        sel && setSelectedPassword(sel);
+        return newPasswords
+      });
+      setHasChanges(true);
       setIsDialogOpen(false);
+      
     }
   };
 
   const updatePassword = (updatedEntry: PasswordEntry) => {
     console.log("updatedEntry", updatedEntry);
-    setPasswords(passwords.map((entry) => (entry.id === updatedEntry.id ? updatedEntry : entry)));
-    setHasChanges(true);      
-    setIsDialogOpen(false);
+    if (passwords !== null) {
+      setPasswords(passwords.map((entry) => (entry.id === updatedEntry.id ? updatedEntry : entry)));
+      setHasChanges(true);
+      setIsDialogOpen(false);
+      setSelectedPassword(updatedEntry);
+    }
   };
 
   const cancelEdit = () => {
@@ -86,7 +97,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   const deletePassword = () => {
     if (selectedPassword) {
       setPasswords(passwords.filter((entry) => entry.id !== selectedPassword.id));
-      setHasChanges(true);      
+      setHasChanges(true);
       setSelectedPassword(null);
     }
   };
@@ -150,7 +161,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
               {selectedPassword ? (
                 <div>
                   <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
-                  <Notes notes={selectedPassword.notes}/>
+                  <Notes notes={selectedPassword.notes} />
                 </div>
               ) : (
                 <p className="text-gray-500">Keine Zeile ausgewählt.</p>
