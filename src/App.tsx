@@ -18,6 +18,10 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogMode, setDialogMode] = useState<"add" | "edit">("add");
   const [hasChanges, setHasChanges] = useState(false);
+
+  const [filterText, setFilterText] = useState("");
+  const [filteredPasswords, setFilteredPasswords] = useState(passwords);
+
   const [error, setError] = useState(false);
 
   // Daten laden (Tauri oder Browser)
@@ -46,10 +50,18 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
     loadData();
   }, []);
 
-  // Daten geändert
-  // useEffect(() => {
-  //   setHasChanges(true);
-  // }, [passwords]);
+  //Filter
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      const lowerCaseFilter = filterText.toLowerCase();
+      const filtered = passwords.filter((password) =>
+        Object.values(password).join(" ").toLowerCase().includes(lowerCaseFilter)
+      );
+      setFilteredPasswords(filtered);
+    }, 300); // Verzögerung von 300ms
+
+    return () => clearTimeout(timeout);
+  }, [filterText, passwords]);
 
   const saveData = async () => {
     if (passwords !== null) {
@@ -68,15 +80,14 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
     console.log("entry", entry);
     if (passwords !== null) {
       setPasswords(() => {
-        const id = crypto.randomUUID()
-        const newPasswords = [...passwords, { ...entry, id }]
-        const sel = newPasswords.find(n => n.id === id)
+        const id = crypto.randomUUID();
+        const newPasswords = [...passwords, { ...entry, id }];
+        const sel = newPasswords.find((n) => n.id === id);
         sel && setSelectedPassword(sel);
-        return newPasswords
+        return newPasswords;
       });
       setHasChanges(true);
       setIsDialogOpen(false);
-      
     }
   };
 
@@ -148,12 +159,20 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
             <Button onClick={deletePassword} disabled={!selectedPassword} variant="destructive">
               Löschen
             </Button>
+            <input
+              type="text"
+              placeholder="Filter eingeben..."
+              value={filterText}
+              onChange={(e) => setFilterText(e.target.value)}
+              className="w-full p-2 border rounded mb-4"
+            />
           </div>
           <div className="flex">
             <div className="w-1/2">
               <PasswordTable
-                passwords={passwords}
+                passwords={filteredPasswords}
                 selectedPassword={selectedPassword}
+                filterText={filterText}
                 onRowClick={setSelectedPassword}
               />
             </div>
@@ -161,7 +180,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
               {selectedPassword ? (
                 <div>
                   <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
-                  <Notes notes={selectedPassword.notes} />
+                  <Notes notes={selectedPassword.notes} filterText={filterText}/>
                 </div>
               ) : (
                 <p className="text-gray-500">Keine Zeile ausgewählt.</p>

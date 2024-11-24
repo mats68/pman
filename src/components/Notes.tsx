@@ -2,17 +2,31 @@ import React, { useState } from "react";
 import { marked } from "marked";
 
 interface NotesProps {
-  notes?: string;
+  notes: string;
+  filterText?: string
 }
 
-export const Notes = ({ notes }: NotesProps) => {
-  const renderNotes = (notes: string) => {
-    const html = marked(notes, { breaks: true, gfm: true });
-    // const html = marked(notes.replace(/\*(.*?)\*/g, "**$1**")); // Markdown umwandeln
-    return { __html: html }; // React benötigt `dangerouslySetInnerHTML`
+export const Notes = ({ notes, filterText }: NotesProps) => {
+  const highlightTextInHtml = (html: string, filter: string) => {
+    if (!filter) return html;
+    const regex = new RegExp(`(${filter})`, "gi");
+    return html.replace(regex, `<span class="bg-yellow-200">$1</span>`);
   };
 
-  return <div className="prose" dangerouslySetInnerHTML={renderNotes(notes || "")}></div>;
+
+  // const renderNotes = (notes: string) => {
+  //   const rawHtml = marked(notes, { breaks: true, gfm: true });
+  //   // const rawHtml = marked(item.notes.replace(/</g, "&lt;").replace(/>/g, "&gt;"));
+  //   // Wende die Hervorhebung auf den generierten HTML-Inhalt an
+  //   const highlightedHtml = highlightTextInHtml(rawHtml, filterText);
+
+  //   return { __html: html };
+  // };
+  const rawHtml = marked(notes, { breaks: true, gfm: true });
+  const highlightedHtml = { __html: highlightTextInHtml(rawHtml, filterText)};
+
+  return <div className="prose" dangerouslySetInnerHTML={highlightedHtml || ""}></div>;
+  
 };
 
 export default Notes;

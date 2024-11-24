@@ -9,12 +9,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { PasswordEntry } from "../types/password";
 
 interface PasswordTableProps {
-  passwords: PasswordEntry[];
+  passwords: PasswordEntry[] | null;
   selectedPassword: PasswordEntry | null;
+  filterText?: string
   onRowClick: (entry: PasswordEntry) => void;
 }
 
-export const PasswordTable = ({ passwords, selectedPassword, onRowClick }: PasswordTableProps) => {
+export const PasswordTable = ({ passwords, selectedPassword, filterText, onRowClick }: PasswordTableProps) => {
   const columns: ColumnDef<PasswordEntry>[] = [
     { accessorKey: "title", header: "Titel" },
     { accessorKey: "category", header: "Kategorie" },
@@ -27,6 +28,18 @@ export const PasswordTable = ({ passwords, selectedPassword, onRowClick }: Passw
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+  const highlightText = (text: string) => {
+    if (!filterText) return text;
+    const regex = new RegExp(`(${filterText})`, "gi");
+    return text.split(regex).map((part, index) =>
+      part.toLowerCase() === filterText.toLowerCase() ? (
+        <span key={index} className="bg-yellow-200">{part}</span>
+      ) : (
+        part
+      )
+    );
+  };  
 
   return (
     <div className="my-4">
@@ -50,7 +63,7 @@ export const PasswordTable = ({ passwords, selectedPassword, onRowClick }: Passw
               onClick={() => onRowClick(row.original)}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>{cell.renderValue()}</TableCell>
+                <TableCell key={cell.id}>{highlightText(cell.renderValue())}</TableCell>
               ))}
             </TableRow>
           ))}
