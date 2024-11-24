@@ -1,4 +1,4 @@
-import { writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
+import { BaseDirectory, writeTextFile, readTextFile } from '@tauri-apps/plugin-fs';
 import { path } from "@tauri-apps/api";
 import { decryptData, encryptData } from './encryption';
 
@@ -17,8 +17,16 @@ export const saveToFile = async (data: any, secretKey: string) => {
     const encryptedData = encryptData(data, secretKey);
     try {
       await writeTextFile(fn,encryptedData);
+      //test
+      // const contents = JSON.stringify({ notifications: true });
+      // await writeTextFile('test.json', contents, {
+      //   baseDir: BaseDirectory.Executable,
+      // });      
+      //test
       
     } catch (error) {
+      // alert(error)
+      alert("Fehler beim Speichern der Datei: "  + error);
       console.error("Fehler beim Speichern der Datei:", error);
     }
   }
