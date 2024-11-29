@@ -1,6 +1,6 @@
 // src/App.tsx
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { saveToFile, loadFromFile } from "./utils/file";
 import { saveToStorage, loadFromStorage } from "./utils/storage";
 import { isTauri } from "./utils/env";
@@ -28,6 +28,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
   const [filteredPasswords, setFilteredPasswords] = useState(passwords);
 
   const [error, setError] = useState(false);
+  const topElement = useRef(null);
 
   // Daten laden (Tauri oder Browser)
   useEffect(() => {
@@ -151,6 +152,8 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
         const index = filteredPasswords.findIndex((p) => p.id === selectedPassword.id);
         if (index > -1 && filteredPasswords.length > index + 1) {
           setSelectedPassword(filteredPasswords[index + 1]);
+          topElement.current.focus();
+          console.log("ref", topElement.current);
         } else {
           alert("Keine weiteren Treffer");
         }
@@ -184,7 +187,14 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
                 <div className="w-1/2 border-l pl-4 max-h">
                   {selectedPassword ? (
                     <div>
-                      <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
+                      <div className="flex">
+                        <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
+                        {/* hidden input to focus cursor on top */}
+                        <input
+                          className="w-2 outline-none"
+                          ref={topElement}
+                        ></input>
+                      </div>
                       <Notes notes={selectedPassword.notes} filterText={filterText} />
                     </div>
                   ) : (
