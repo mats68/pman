@@ -15,7 +15,7 @@ interface PasswordTableProps {
   onRowClick: (entry: PasswordEntry) => void;
 }
 
-export const PasswordTable = ({ passwords, selectedPassword, filterText, onRowClick }: PasswordTableProps) => {
+export const PasswordTable = ({ passwords, selectedPassword, filterText, onRowClick, onHeaderClick }: PasswordTableProps) => {
   const columns: ColumnDef<PasswordEntry>[] = [
     { accessorKey: "title", header: "Titel" },
     { accessorKey: "category", header: "Kategorie" },
@@ -28,6 +28,8 @@ export const PasswordTable = ({ passwords, selectedPassword, filterText, onRowCl
     columns,
     getCoreRowModel: getCoreRowModel(),
   });
+
+
 
   const highlightText = (text: string) => {
     if (!filterText) return text;
@@ -48,7 +50,7 @@ export const PasswordTable = ({ passwords, selectedPassword, filterText, onRowCl
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>{header.column.columnDef.header}</TableHead>
+                <TableHead key={header.id} onClick={() => onHeaderClick(header.id)}>{header.column.columnDef.header}</TableHead>
               ))}
             </TableRow>
           ))}

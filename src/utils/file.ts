@@ -32,6 +32,10 @@ export const saveToFile = async (data: any, secretKey: string) => {
   }
 };
 
+export const getFilePath = async () => {
+  return await getFullFileName(FILE_NAME);
+}
+
 export const loadFromFile = async (key: string) => {
   let fn
   let encryptedData

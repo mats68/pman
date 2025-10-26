@@ -14,10 +14,7 @@
     "windows": [
       {
         "title": "pman",
-        "x": 100,
-        "y": 100,
-        "width": 1400,
-        "height": 1200
+        "maximized": true
       }
     ],
     "security": {

@@ -1,7 +1,7 @@
 // src/App.tsx
 
-import { useEffect, useRef, useState } from "react";
-import { saveToFile, loadFromFile } from "./utils/file";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { saveToFile, loadFromFile, getFilePath } from "./utils/file";
 import { saveToStorage, loadFromStorage } from "./utils/storage";
 import { isTauri } from "./utils/env";
 import { PasswordEntry } from "./types/password";
@@ -29,6 +29,24 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
 
   const [error, setError] = useState(false);
   const topElement = useRef(null);
+  const filterInput = useRef(null);
+  const filePath = useRef("");
+
+  const handleKeyDown = (e: KeyboardEvent) => {
+    if (e.ctrlKey && e.key === "f") {
+      e.preventDefault();
+      filterInput.current.focus();
+    } else if (e.key === "F3") {
+      e.preventDefault();
+      searchWindow()
+
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      setFilterText("")
+
+    }
+
+  };
 
   // Daten laden (Tauri oder Browser)
   useEffect(() => {
@@ -36,6 +54,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
       if (isTauri()) {
         try {
           const fileData = await loadFromFile(secretKey);
+          filePath.current = await getFilePath();
           if (fileData) {
             setPasswords(fileData);
           } else {
@@ -82,6 +101,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
       } else if (event.key === "F10") {
         navigator.clipboard.writeText(selectedPassword.password);
       }
+
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -89,6 +109,11 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
       window.removeEventListener("keydown", handleKeyDown);
     };
   }, [selectedPassword]);
+
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleKeyDown]);
 
   const saveData = async () => {
     if (passwords !== null) {
@@ -153,13 +178,21 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
         if (index > -1 && filteredPasswords.length > index + 1) {
           setSelectedPassword(filteredPasswords[index + 1]);
           topElement.current.focus();
-          console.log("ref", topElement.current);
+          setTimeout(() => {
+            searchWindow()            
+          }, 10);
+          // console.log("ref", topElement.current);
         } else {
           alert("Keine weiteren Treffer");
         }
       }
     }
   };
+
+  const sortHeader = (column: string) => {
+      const sorted = [...filteredPasswords].sort((a, b) => a[column].localeCompare(b[column]));
+      setFilteredPasswords(sorted);
+  }
 
   if (error) {
     return <div>Falsches Passwort</div>;
@@ -176,24 +209,22 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
           <div>
             {filteredPasswords && (
               <div className="flex">
-                <div className="w-1/2 max-h overflow-y-auto">
+                <div className="w-1/2 h-[calc(100dvh-8rem)] overflow-y-auto">
                   <PasswordTable
                     passwords={filteredPasswords}
                     selectedPassword={selectedPassword}
                     filterText={filterText}
                     onRowClick={setSelectedPassword}
+                    onHeaderClick={sortHeader}
                   />
                 </div>
-                <div className="w-1/2 border-l pl-4 max-h">
+                <div className="w-1/2 border-l pl-4 h-[calc(100dvh-8rem)]">
                   {selectedPassword ? (
                     <div>
                       <div className="flex">
                         <h2 className="font-bold text-lg">Notizen für {selectedPassword.title}</h2>
                         {/* hidden input to focus cursor on top */}
-                        <input
-                          className="w-2 outline-none"
-                          ref={topElement}
-                        ></input>
+                        <input className="w-2 outline-none" ref={topElement}></input>
                       </div>
                       <Notes notes={selectedPassword.notes} filterText={filterText} />
                     </div>
@@ -239,6 +270,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
                 <Trash2 />
               </Button>
               <input
+                ref={filterInput}
                 type="text"
                 placeholder="Filter eingeben..."
                 value={filterText}
@@ -248,6 +280,7 @@ const App: React.FC<{ secretKey: string }> = ({ secretKey }) => {
               <Button onClick={searchWindow} disabled={!filterText}>
                 <ArrowBigRight />
               </Button>
+              <span className="ml-auto text-xs">{filePath.current}</span>
             </div>
           </div>
         </div>

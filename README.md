@@ -1,5 +1,15 @@
+# Passwortmanager
+
+Beim erstn Mal wird das Master-Password festelegt.
+Beim ersten Speichern wird das benutzt um die Datei zu verschlüsseln.
+Danch kann die Datei nur mit diesem Passwort geöffnet werden.
+
+
+
 # exe
 npx tauri build 
+
+in D:\dev\Tauri\pman\src-tauri\target\release
 
 # app local data
 %localappdata%

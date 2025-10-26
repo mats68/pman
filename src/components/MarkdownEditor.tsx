@@ -12,7 +12,7 @@ const MarkdownEditor = ({ notes, onChange }: MarkdownProps) => {
 
   return (
     <div className="p-4">
-      <MDEditor value={notes} onChange={(val) => onChange(val)} height={400}/>
+      <MDEditor value={notes} onChange={(val) => onChange(val)} height={400} preview="edit"/>
     </div>
   );
 };
